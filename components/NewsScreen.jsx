@@ -7,6 +7,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Linking,
+  TextInput,
+  Alert
 } from "react-native";
 import { useEffect, useState } from "react";
 import { Dropdown } from "react-native-element-dropdown";
@@ -21,10 +23,21 @@ const dropdownData = [
   { label: "Science", value: "science" },
   { label: "Sports", value: "sports" },
 ];
+// const countryData = [
+//   { label: "All World", value: "world-wide" },
+//   { label: "India", value: "in" },
+//   { label: "USA", value: "us" },
+//   { label: "China", value: "cn" },
+//   { label: "Russia", value: "ru" },
+//   { label: "Great Britain", value: "gb" },
+//   { label: "Singapore", value: "sg" },
+// ];
 function NewsScreen() {
   const navigation = useNavigation();
   const [newsData, onNewsData] = useState("");
   const [value, setValue] = useState("technology");
+  // const [country, setCountry] = useState("world-wide");
+  const [search, setSearch] = useState("");
   const [isFocus, setIsFocus] = useState(false);
   const renderLabel = () => {
     if (value || isFocus) {
@@ -36,21 +49,29 @@ function NewsScreen() {
     }
     return null;
   };
+  function handleSearchSubmit(){
+    if (search.trim().length < 3) {
+      Alert.alert("Error", "Please enter at least 3 characters for the search.");
+    } else {
+      fetchData();
+    }
+  }
   async function fetchData() {
+    let url = `https://newsapi.org/v2/top-headlines?category=${value}&sortBy=publishedAt&pageSize=30&apiKey=${process.env.EXPO_PUBLIC_NEWSAPI}`
+    if(search.length > 2){
+      url = `https://newsapi.org/v2/everything?q=${search}&sortBy=publishedAt&pageSize=30&apiKey=${process.env.EXPO_PUBLIC_NEWSAPI}`
+      setSearch("");
+    }
+   
     try {
-      // const res = await fetch(`https://newsapi.org/v2/top-headlines?sources=the-times-of-india&apiKey=${process.env.EXPO_PUBLIC_NEWSAPI}`);
-      const res = await fetch(
-        `https://newsapi.org/v2/top-headlines?category=${value}&pageSize=15&apiKey=${process.env.EXPO_PUBLIC_NEWSAPI}`
-      );
+      const res = await fetch(url);
       const data = await res.json();
-      // console.log(data);
-      // onNewsData(data.articles);
+   
       const data1 = data.articles?.filter((d) => d.urlToImage !== null);
 
       onNewsData(data1 || []);
-      // console.log(DummyData);
     } catch (err) {
-      console.log(err);
+      Alert.alert(err);
     }
   }
 
@@ -94,13 +115,8 @@ function NewsScreen() {
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onChange={(item) => {
-            console.log(item);
-
             setValue(item.value);
-            console.log(value);
             setIsFocus(false);
-            // fetchData(item.value);
-            // console.log(item.data);
           }}
           renderLeftIcon={() => (
             <MaterialCommunityIcons
@@ -111,13 +127,40 @@ function NewsScreen() {
             />
           )}
         />
+        {/* <Dropdown
+          style={[styles.dropdown, isFocus && { borderColor: "blue" }]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={countryData}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={!isFocus ? "Select item" : "..."}
+          searchPlaceholder="Search..."
+          value={country}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onChange={(item) => {
+            setCountry(item.value);
+            setIsFocus(false);
+          }}
+          /> */}
+          <TouchableOpacity>
+            <TextInput placeholder="Search News" style={styles.inputBox} onChangeText={setSearch}
+            value={search}
+            onSubmitEditing={handleSearchSubmit}
+            />
+          </TouchableOpacity>
         <View style={styles.container}>
           {newsData &&
             newsData.map((data) => (
               <View
                 style={styles.card}
-                key={data.source.id}
-                onPress={() => console.log(data.sourceName.title)}
+                key={data.url}
+               
               >
                 <Image
                   source={{ uri: data.urlToImage }}
@@ -126,10 +169,10 @@ function NewsScreen() {
                 />
                 <View style={styles.textContainer}>
                   <Text style={styles.sourceName}>{data.title}</Text>
-                  <Text style={styles.authorName}>{data.description}</Text>
+                  <Text style={styles.description}>{data.description}</Text>
                   <Text style={styles.authorName}>~ {data.source.name}</Text>
                   <Text
-                    style={styles.readMore}
+                    className="text-red-500 my-2 text-lg text-center"
                     onPress={() => {
                       // Opens the article in the default browser or WebView
                       Linking.openURL(data.url); // Use Linking for opening URLs
@@ -192,13 +235,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   authorName: {
-    fontSize: 10,
+    fontSize: 12,
     textAlign: "center",
     marginBottom: 4,
     color: "#333",
+    fontWeight: "bold",
   },
   description: {
-    fontSize: 12,
+    fontSize: 10,
     textAlign: "center",
     marginBottom: 4,
     color: "#333",
@@ -212,6 +256,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "white",
     padding: 16,
+    marginTop: 16,
   },
   dropdown: {
     height: 50,
@@ -219,7 +264,10 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 8,
     paddingHorizontal: 8,
-    margin: 16,
+    marginLeft: 16,
+    marginTop: 16,
+    marginRight: 16,
+    paddingLeft:20,
   },
   icon: {
     marginRight: 5,
@@ -246,6 +294,18 @@ const styles = StyleSheet.create({
   inputSearchStyle: {
     height: 40,
     fontSize: 16,
+  },
+  inputBox: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 8,
+    marginLeft: 16,
+    marginTop: 16,
+    marginRight: 16,
+    paddingLeft:20,
+
   },
 });
 

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "NewsXf",
-    "slug": "NewsXf",
+    "slug": "newsxf",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,16 +12,24 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rahulxf.newsxf"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.rahulxf.newsxf"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "38d026fb-dc72-4bf2-b7a8-a2f14ab878c8"
+      }
+    },
+    "owner": "rahulxf"
   }
 }
